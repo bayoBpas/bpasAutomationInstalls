@@ -1,9 +1,10 @@
+#import the required libraries
 import os
 import shutil
 import time
 
 #check if the source directory is accessible. Quit if not
-if not os.path.exists(r'Z:\IT\Dynamo Player Settings\dynamoplayer-5'):quit()
+if not os.path.exists(r'Z:`\IT\Dynamo Player Settings\dynamoplayer-5'):quit()
 
 #get current username in session
 userName = os.getlogin()
