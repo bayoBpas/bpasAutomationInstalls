@@ -1,11 +1,19 @@
+#add a condition that cuts out the graph if revit is open. or give the user the option to close the application.###############
+
 #import the required libraries
 import os
 import shutil
 import time
 import tkinter as tk
+import psutil
 
 #check if the source directory of the BPAS pyRevit extension is accessible. Quit if not
 if not os.path.exists(r'Z:\IT\Dynamo Packages\bpasLogo.gif') or not os.path.exists( r'Z:\IT\Dynamo Packages\2.13') :quit()
+
+#check if revit is running. Quit if running.
+if ("Revit.exe" in (p.name() for p in psutil.process_iter()) or "revit.exe" 
+in (p.name() for p in psutil.process_iter())) :quit()
+
 
 ##################create splash screen##############################
 #Create the root window
