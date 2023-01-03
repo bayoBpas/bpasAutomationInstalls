@@ -1,118 +1,179 @@
-#add a condition that cuts out the graph if revit is open. or give the user the option to close the application.###############
-
-#import the required libraries
+# Import the required libraries.
 import os
+import sys
 import shutil
 import time
-import tkinter as tk
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 import psutil
 
-#check if the source directory of the BPAS pyRevit extension is accessible. Quit if not
-if not os.path.exists(r'Z:\IT\Dynamo Packages\bpasLogo.gif') or not os.path.exists( r'Z:\IT\Dynamo Packages\2.13') :quit()
 
-#check if revit is running. Quit if running.
-if ("Revit.exe" in (p.name() for p in psutil.process_iter()) or "revit.exe" 
-in (p.name() for p in psutil.process_iter())) :quit()
+# Function for checking if the required paths exist.
+def paths_exist(*paths):
+    """
+    Check if any of the input paths are accessible.
+    Quit if any of the paths are not accessible.
+    Requires the os library to run.
+    """
+    for path in paths:
+        if not os.path.exists(path):
+            sys.exit("One or more of the paths does not exist")
 
+# Paths to be checked.
+path_bpas_logo = r'Z:\IT\Dynamo Packages\bpasLogo.gif'
+path_dynamo_packages = r'Z:\IT\Dynamo Packages\2.13'
 
-##################create splash screen##############################
-#Create the root window
-root = tk.Tk()
-
-#Set the dimensions of the splash screen
-root.geometry("400x400")
-
-#Hide the window's frame and controls
-root.overrideredirect(True)
-
-# Set the title of the splash screen
-root.title("Dynamo Package Install")
-
-root.eval('tk::PlaceWindow . center')
-
-#Create a label to hold the notification text
-label = tk.Label(root, text="Dynamo packages are installing. Please wait and leave this window open.",
-                 justify=tk.RIGHT)
-
-#Create a label to hold the background image
-image = tk.Label(root)
-
-#Set the image of the label
-image.image = tk.PhotoImage(file=r"Z:\IT\Dynamo Packages\bpasLogo.gif")
-image.config(image=image.image)
+# Check if the paths exist.
+try:
+    paths_exist(path_bpas_logo, path_dynamo_packages)
+    print("The paths exist")
+except:
+    print("The paths do not exist")
+    quit()
 
 
-#Function to animate the gif
-def animate():
-    try:
-        # Update the image of the label
-        image.image = tk.PhotoImage(file="bpasLogo.gif")
-        image.config(image=image.image)
-    except:
-        pass
-    finally:
-        # Call this function again to animate the gif
-        image.after(1000, animate)
+# Function for checking if revit is running. Quit if running.
+def programs_running(*programs):
+    """
+    Check if any of the input programs are running in the task manager.
+    Quit if any of the input programs is found running.
+    Requires the sys and psutil libraries to run.
+    """
+    running_processes = list(p.name() for p in psutil.process_iter())
 
-root.after(0, animate)
+    # Check if any of the input programs are in 'running_processes'.
+    for program in programs:
+        if program in running_processes:
+            sys.exit("One or more of the programs was found running")
 
-# Pack all the widgets
-label.pack()
-image.pack()
-
-
-
-################## install packages##################
-def runPackageCode():
-    #get current username in session
-    userName = os.getlogin()
-    print(userName)
-
-    #target directory for the dynamo packages.Combine username with directory path beginning and end for target directory
-    begDir = r'C:/Users/'
-    endDir = 'AppData/Roaming/Dynamo/Dynamo Revit/2.13'
-    target_dir = os.path.join(begDir,userName,endDir)
-    print(target_dir)
+# Check if Revit is running.
+try:
+    programs_running('revit.exe', 'Revit.exe')
+    print("Revit is not running")
+except:
+    print("Revit is running")
+    quit()
 
 
-    # Source directory for the dynamo packages on the server
-    source_dir = r'Z:\IT\Dynamo Packages\2.13'
+# Class to create splash screen/loading window.
+class LoadingScreen(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setFixedSize(400, 450)
+        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.CustomizeWindowHint)
+
+        # Create a vertical layout to hold the gif and label widgets
+        self.layout = QVBoxLayout(self)
+
+        # Add the gif widget.
+        self.label_animation = QLabel(self)
+        gif_file_path = r'Z:\IT\Dynamo Packages\bpasLogo.gif'
+        self.movie = QMovie(gif_file_path)
+        self.label_animation.setMovie(self.movie)
+        self.layout.addWidget(self.label_animation)
+
+        # Add greeting for user.
+        self.greeting = QLabel(self)
+        self.greeting.setText(f"Hello, {os.getlogin().title()}!")
+        font = QFont()
+        font.setFamily("Sans-Serif")
+        font.setPointSize(13)
+        self.greeting.setFont(font)
+        self.layout.addWidget(self.greeting)
+
+        # Add note that Dynamo packages are installing.
+        self.package_run = QLabel(self)
+        self.package_run.setText("Dynamo Packages Installing. Please wait."
+        " Do NOT open Revit.")
+        font2 = QFont()
+        font2.setFamily("Sans-Serif")
+        font2.setPointSize(10)
+        self.package_run.setFont(font2)
+        self.layout.addWidget(self.package_run)
+
+        # Add note on when to proceed.
+        self.proceed_text = QLabel(self)
+        self.proceed_text.setText("Proceed when this window closes.")
+        self.proceed_text.setFont(font2)
+        self.layout.addWidget(self.proceed_text)
+
+        # Animate the gif file.
+        self.startAnimation()
+
+        # Create and start a timer to call the run_code function repeatedly.
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.run_code)
+        self.timer.start(5000)  # Set the timer interval to 5000 milliseconds.
+
+        self.show()
+
+    def startAnimation(self):
+        self.movie.start()
+
+    def stopAnimation(self):
+        self.movie.stop()
+        self.close()
+
+    # To run the code that copies all the dynamo package files.
+    def run_code(self):
+        # Get current username in session.
+        userName = os.getlogin()
+        print(userName)
+
+        # Target directory for the dynamo packages.
+        # Combine username with directory path beginning and end for target
+        # directory.
+        begDir = r'C:/Users/'
+        endDir = 'AppData/Roaming/Dynamo/Dynamo Revit/2.13'
+        target_dir = os.path.join(begDir,userName,endDir)
+        print(target_dir)
+
+        # Source directory for the dynamo packages on the server
+        source_dir = r'Z:\IT\Dynamo Packages\2.13'
+
+        # Get all file names in the source directory
+        fileNames = os.listdir(source_dir)
+        print(fileNames)
+
+        # Check if the target directory exists
+        if not os.path.exists(target_dir):
+            # Copy the dynamo package folder if the folder
+            #does not exist at the target path.
+            shutil.copytree(source_dir, target_dir)
 
 
-    #get all file names in the source directory
-    fileNames = os.listdir(source_dir)
-    print(fileNames)
+        # Check if the source directory has been modified more recently
+        # than the target directory.
+        print(os.path.exists(source_dir) and os.path.getmtime(source_dir) > \
+        os.path.getmtime(target_dir))
+        if os.path.exists(source_dir) and os.path.getmtime(source_dir) > \
+        os.path.getmtime(target_dir):
+
+            # Delete target directory if it exists.
+            if os.path.exists(target_dir):
+                # Delete file.
+                if os.path.isfile(target_dir):
+                    os.remove(target_dir)
+                # Delete directory.
+                else:
+                    shutil.rmtree(target_dir)
+
+            shutil.copytree(source_dir, target_dir)
+
+        else:
+            quit()
 
 
-    # Check if the target directory exists
-    if not os.path.exists(target_dir):
-        # Copy the dynamo package folder if the folder does not exist at the target path
-        shutil.copytree(source_dir, target_dir)
+        # Stop the timer and close the splash screen when
+        # the code finishes running.
+        self.timer.stop()
+        self.stopAnimation()
 
+if __name__=='__main__':
+    app = QApplication(sys.argv)
 
-    #check if the source directory has been modified more recently than the target directory
-    print(os.path.exists(source_dir) and os.path.getmtime(source_dir) > os.path.getmtime(target_dir))
-    if os.path.exists(source_dir) and os.path.getmtime(source_dir) > os.path.getmtime(target_dir):
+    splash_screen = LoadingScreen()
 
-        #delete target directory if it exists
-        if os.path.exists(target_dir):
-            # Delete file
-            if os.path.isfile(target_dir):
-                os.remove(target_dir)
-            # Delete directory
-            else:
-                shutil.rmtree(target_dir)
-
-        shutil.copytree(source_dir, target_dir)
-
-        #close the splash screen
-        root.destroy()
-
-    else:
-        quit()
-
-#schedule package copying code to run after 1000 milliseconds
-root.after(1000,runPackageCode)
-
-# Start the main event loop
-root.mainloop()
+    app.quit()
+    sys.exit(app.exec_())
