@@ -88,7 +88,7 @@ class LoadingScreen(QWidget):
         " Do NOT open Revit.")
         font2 = QFont()
         font2.setFamily("Sans-Serif")
-        font2.setPointSize(10)
+        font2.setPointSize(8)
         self.package_run.setFont(font2)
         self.layout.addWidget(self.package_run)
 
