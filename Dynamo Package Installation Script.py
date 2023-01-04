@@ -136,33 +136,41 @@ class LoadingScreen(QWidget):
         fileNames = os.listdir(source_dir)
         print(fileNames)
 
-        # Check if the target directory exists
-        if not os.path.exists(target_dir):
-            # Copy the dynamo package folder if the folder
-            #does not exist at the target path.
-            shutil.copytree(source_dir, target_dir)
-
-
-        # Check if the source directory has been modified more recently
-        # than the target directory.
-        print(os.path.exists(source_dir) and os.path.getmtime(source_dir) > \
-        os.path.getmtime(target_dir))
-        if os.path.exists(source_dir) and os.path.getmtime(source_dir) > \
-        os.path.getmtime(target_dir):
-
-            # Delete target directory if it exists.
-            if os.path.exists(target_dir):
-                # Delete file.
-                if os.path.isfile(target_dir):
-                    os.remove(target_dir)
-                # Delete directory.
+        # While loop to ensure that the directories are accessible while
+        # the files are being copied. In case of load shedding/internet cuts.
+        # Stops copying if the directory is not found.
+        directories_accessible = True
+        while directories_accessible:
+            if not os.path.exists(source_dir):
+                print('Directory no longer accessible')
+                directories_accessible = False
+            else:
+                # Check if the target directory exists.
+                if not os.path.exists(target_dir):
+                    # Copy the dynamo package folder if the folder
+                    #does not exist at the target path.
+                    shutil.copytree(source_dir, target_dir)
                 else:
-                    shutil.rmtree(target_dir)
+                    # Check if the source directory has been modified more
+                    # recently than the target directory.
+                    print(os.path.exists(source_dir) and os.path.getmtime \
+                    (source_dir) > os.path.getmtime(target_dir))
+                    if os.path.exists(source_dir) and os.path.getmtime \
+                    (source_dir) > os.path.getmtime(target_dir):
 
-            shutil.copytree(source_dir, target_dir)
+                        # Delete target directory if it exists.
+                        if os.path.exists(target_dir):
+                            # Delete file.
+                            if os.path.isfile(target_dir):
+                                os.remove(target_dir)
+                            # Delete directory.
+                            else:
+                                shutil.rmtree(target_dir)
 
-        else:
-            quit()
+                        shutil.copytree(source_dir, target_dir)
+
+                    else:
+                        quit()
 
 
         # Stop the timer and close the splash screen when
