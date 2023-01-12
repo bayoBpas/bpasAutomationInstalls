@@ -53,16 +53,11 @@ except:
 
 
 ###############download BPAS extension file to computer###############
-
-# Get current username in session
-userName = os.getlogin()
-print(userName)
-
 # Target directory for the bpas extensions folder.
-# Combine username with directory path beginning and end.
-begDir = r'C:/Users/'
+# Combine the c: drive user folder path with the target directory path end.
+begDir = os.path.expanduser('~')
 endDir = 'AppData/Roaming/pyRevit/bpas'
-target_dir = os.path.join(begDir,userName,endDir)
+target_dir = os.path.join(begDir,endDir)
 print(target_dir)
 
 
@@ -106,9 +101,9 @@ else:
 #################pyRevit settings and config file update##################
 
 # Open the pyRevit configuration files from the current users computer.
-conBegDir = r'C:/Users/'
+conBegDir = os.path.expanduser('~')
 conEndDir = 'AppData\Roaming\pyRevit\pyRevit_config.ini'
-configPath = os.path.join(conBegDir,userName,conEndDir)
+configPath = os.path.join(conBegDir,conEndDir)
 
 # Check if the bpas extension file has been updated more recently than the
 # config file.
