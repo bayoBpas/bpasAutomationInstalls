@@ -117,16 +117,11 @@ class LoadingScreen(QWidget):
 
     # To run the code that copies all the dynamo package files.
     def run_code(self):
-        # Get current username in session.
-        userName = os.getlogin()
-        print(userName)
-
         # Target directory for the dynamo packages.
-        # Combine username with directory path beginning and end for target
-        # directory.
-        begDir = r'C:/Users/'
+        # Combine the c: drive user folder path with the target directory path end.
+        begDir = os.path.expanduser('~')
         endDir = 'AppData/Roaming/Dynamo/Dynamo Revit/2.13'
-        target_dir = os.path.join(begDir,userName,endDir)
+        target_dir = os.path.join(begDir,endDir)
         print(target_dir)
 
         # Source directory for the dynamo packages on the server
