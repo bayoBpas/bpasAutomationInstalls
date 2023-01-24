@@ -51,16 +51,11 @@ except:
     quit()
 
 
-
-# Get current username in session.
-userName = os.getlogin()
-print(userName)
-
 # Target directory for the dynamo player settings.
-#Combine username with directory path beginning and end.
-begDir = r'C:/Users/'
+# Combine the c: drive user folder path with the target directory path end.
+begDir = os.path.expanduser('~')
 endDir = 'AppData\Local\dynamoplayer-5'
-target_dir = os.path.join(begDir,userName,endDir)
+target_dir = os.path.join(begDir,endDir)
 print(target_dir)
 
 
@@ -75,7 +70,7 @@ print(fileNames)
 
 # Check if the target directory exists.
 if not os.path.exists(target_dir):
-    # Copy the dynamo player settings folder if the folder does not exist at 
+    # Copy the dynamo player settings folder if the folder does not exist at
     # the target path.
     shutil.copytree(source_dir, target_dir)
 
